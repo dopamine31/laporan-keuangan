@@ -1,10 +1,12 @@
-.rpt { width: 1100px; padding: 16px; background: #fff; color: #000; font: 14px Arial, Helvetica, sans-serif; box-sizing: border-box; -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+/* Lebar gambar mengikuti isi: width max-content, semua tabel 100% dari lebar itu
+   (jadi semua tabel sama lebar dengan tabel yang paling lebar). */
+.rpt { width: max-content; min-width: 360px; padding: 16px; background: #fff; color: #000; font: 14px Arial, Helvetica, sans-serif; box-sizing: border-box; -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
 .rpt * { box-sizing: border-box; }
 .rpt-grid { display: flex; gap: 16px; align-items: flex-start; }
-.rpt-main { flex: 1; }
-.rpt-side { width: 300px; }
-.rpt table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 8px; }
-.rpt th, .rpt td { border: 1px solid #000; padding: 3px 6px; height: 26px; overflow: hidden; white-space: nowrap; }
+.rpt-main { flex: 1 1 auto; }
+.rpt-side { flex: 0 0 auto; min-width: 260px; }
+.rpt table { width: 100%; border-collapse: collapse; table-layout: auto; margin-bottom: 8px; }
+.rpt th, .rpt td { border: 1px solid #000; padding: 3px 8px; height: 26px; white-space: nowrap; }
 .rpt .c { text-align: center; }
 .rpt .r { text-align: right; }
 .rpt .h-blue  { background: #d0dfe6; font-weight: 700; text-align: center; }
@@ -17,6 +19,6 @@
 .rpt .tot td  { font-weight: 700; font-size: 18px; height: 34px; background: #d9ead3; text-shadow: 0.5px 0 0 #000, -0.5px 0 0 #000; }
 .rpt .tot-red td { background: #f00; color: #ff0; text-shadow: 0.5px 0 0 #ff0, -0.5px 0 0 #ff0; }
 
-.rpt .sum { width: 55%; margin-top: 10px; }
-.rpt .sum td { border: none; font-size: 15px; }
+.rpt .sum { width: auto; flex: 0 0 auto; margin-top: 10px; }
+.rpt .sum td { border: none; font-size: 15px; padding: 3px 10px; }
 .rpt .sum .omz td { background: #ff0; }
