@@ -111,6 +111,18 @@ async function shareOrDownload(blob, name, title) {
   setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
+// Super HD: skala setinggi mungkin (maks 6x) tapi total piksel dijaga
+// di bawah batas canvas Safari iOS (16.777.216). Di atas itu hasilnya bisa kosong.
+const MAX_SCALE = 6;
+const MAX_PIXELS = 16_000_000;
+
+async function render(host, scale) {
+  const canvas = await html2canvas(host, { scale, backgroundColor: '#ffffff', logging: false });
+  const blob = await new Promise((r) => canvas.toBlob(r, 'image/png'));
+  canvas.width = canvas.height = 0; // lepas memori
+  return blob;
+}
+
 // mode: 'invoice' (untuk pelanggan) atau 'internal' (rahasia)
 export async function exportImage(state, tanggal, mode = 'invoice') {
   const isInvoice = mode === 'invoice';
@@ -119,11 +131,18 @@ export async function exportImage(state, tanggal, mode = 'invoice') {
   host.innerHTML = (isInvoice ? invoiceTemplate : internalTemplate)(state, totals(state), tanggal);
   document.body.appendChild(host);
   try {
+    if (document.fonts?.ready) await document.fonts.ready;
     const { offsetWidth: w, offsetHeight: h } = host;
-    // batas canvas Safari iOS ≈ 16 juta piksel
-    const scale = Math.min(4, Math.sqrt(16_000_000 / (w * h)));
-    const canvas = await html2canvas(host, { scale, backgroundColor: '#ffffff', logging: false });
-    const blob = await new Promise((r) => canvas.toBlob(r, 'image/png'));
+    const scale = Math.floor(Math.min(MAX_SCALE, Math.sqrt(MAX_PIXELS / (w * h))) * 100) / 100;
+
+    // kalau HP menolak ukuran besar (blob kosong), coba lagi lebih kecil
+    let blob = null;
+    for (const sc of [scale, scale * 0.7, 2]) {
+      try { blob = await render(host, Math.max(1, sc)); } catch { blob = null; }
+      if (blob) break;
+    }
+    if (!blob) throw new Error('HP tidak sanggup membuat gambar sebesar ini');
+
     await shareOrDownload(
       blob,
       `${isInvoice ? 'invoice' : 'laporan-internal'}-${tanggal}.png`,
