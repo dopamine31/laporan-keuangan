@@ -1,9 +1,16 @@
 import { supabase } from '../config/supabase.js';
 
-export const getSession = async () => (await supabase.auth.getSession()).data.session;
+// Akun tunggal. PIN 6 angka = password akun ini di Supabase.
+// Ubah EMAIL kalau akunmu memakai email lain.
+const EMAIL = 'email@email.com';
 
-export const signIn = async (email, password) => {
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+export const getSession = async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session;
+};
+
+export const signInPin = async (pin) => {
+  const { error } = await supabase.auth.signInWithPassword({ email: EMAIL, password: pin });
   if (error) throw error;
 };
 
