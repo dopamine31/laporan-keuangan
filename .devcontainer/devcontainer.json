@@ -1,0 +1,10 @@
+{
+  "name": "Laporan Keuangan",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "forwardPorts": [5173],
+  "portsAttributes": { "5173": { "label": "App", "onAutoForward": "openPreview" } },
+  "postCreateCommand": "[ -f package.json ] && npm install || true",
+  "customizations": {
+    "vscode": { "extensions": ["bradlc.vscode-tailwindcss", "esbenp.prettier-vscode"] }
+  }
+}
