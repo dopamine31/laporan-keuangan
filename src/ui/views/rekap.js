@@ -45,23 +45,24 @@ export function rekapBody(rows) {
           <span class="block truncate text-xs text-gray-500">${esc(d.menu) || '-'}</span>
         </span>
         <span class="shrink-0 text-right">
-          <b class="block text-sm">${rupiah(d.t.omset)}</b>
-          <span class="block text-xs ${d.t.profit < 0 ? 'text-red-600' : 'text-green-700'}">Profit ${rupiah(d.t.profit)}</span>
+          <b class="block text-sm ${d.t.profit < 0 ? 'text-red-600' : 'text-green-700'}">${rupiah(d.t.profit)}</b>
+          <span class="block text-xs text-gray-500">Omset ${rupiah(d.t.omset)}</span>
         </span>
       </button>`;
   }).join('');
 
   return `
-    <div class="rounded-2xl bg-yellow-300 p-4 text-center">
-      <div class="text-xs font-bold">💰 OMSET</div>
-      <div class="text-3xl font-extrabold">${rupiah(omset)}</div>
+    <div class="rounded-2xl ${profit < 0 ? 'bg-red-200' : 'bg-yellow-300'} p-4 text-center">
+      <div class="text-xs font-bold">💰 PROFIT</div>
+      <div class="text-3xl font-extrabold ${profit < 0 ? 'text-red-700' : ''}">${rupiah(profit)}</div>
       <div class="text-xs">${days.length} hari ada laporan</div>
     </div>
     <div class="mt-2 grid grid-cols-3 gap-2 text-center">
+      <div class="rounded-xl bg-green-100 p-2"><div class="text-[11px] text-gray-500">Omset</div><b class="text-sm text-green-700">${rupiah(omset)}</b></div>
       <div class="rounded-xl bg-gray-100 p-2"><div class="text-[11px] text-gray-500">Modal bahan</div><b class="text-sm">${rupiah(bahan)}</b></div>
       <div class="rounded-xl bg-red-50 p-2"><div class="text-[11px] text-gray-500">Operasional</div><b class="text-sm text-red-700">${rupiah(ops)}</b></div>
-      <div class="rounded-xl ${profit < 0 ? 'bg-red-100' : 'bg-green-100'} p-2"><div class="text-[11px] text-gray-500">Profit</div><b class="text-sm ${profit < 0 ? 'text-red-700' : 'text-green-700'}">${rupiah(profit)}</b></div>
     </div>
+    <p class="mt-2 text-center text-[11px] text-gray-500">Profit = Omset − Modal bahan − Operasional</p>
     ${belum ? `<p class="mt-2 rounded-lg bg-amber-100 p-2 text-xs text-amber-800">⚠️ Modal belum lengkap di ${belum} hari (ada bahan yang harga belinya kosong). Profit bisa tampak lebih besar dari kenyataan.</p>` : ''}
     <h3 class="mb-2 mt-4 text-sm font-bold text-gray-700">Per hari (ketuk untuk membuka)</h3>
     <div class="space-y-2">${list}</div>`;
