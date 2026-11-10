@@ -1,10 +1,10 @@
-import { input, head } from '../components.js';
+import { input, head, saranBtn } from '../components.js';
 import { esc } from '../../utils/format.js';
 
 export const jualView = (s) => `
   ${head('💵 Harga Jual', 'omset', 'bg-green-100 text-green-700')}
   <p class="mb-3 text-xs italic text-gray-500">Isi harga jual <b>per satuan</b> (mis. per kg). Jumlah = qty × harga.
-    Hanya harga jual ini yang tampil di invoice.</p>
+    Hanya harga jual ini yang tampil di invoice. Angka abu-abu = harga jual terakhir, ketuk <b>✓ pakai</b> atau ketik baru.</p>
   ${s.bahan.length === 0
     ? '<p class="py-10 text-center text-gray-400">Belum ada bahan.<br>Isi dulu di tab 🛒 Bahan.</p>'
     : `<div class="space-y-2">${s.bahan.map((b, i) => `
@@ -18,6 +18,7 @@ export const jualView = (s) => `
             <b class="text-sm text-gray-800" data-calc="jumlah" data-list="bahan" data-i="${i}"></b></div>
           ${input({ list: 'bahan', i, f: 'jual', value: b.jual, ph: 'Harga jual / sat', numeric: true, cls: 'text-right font-bold' })}
         </div>
+        ${saranBtn(i, 'jual')}
         <div class="mt-1 flex justify-between text-xs text-gray-500">
           <span>Jumlah jual: <b class="text-sm text-gray-800" data-calc="jual" data-list="bahan" data-i="${i}"></b></span>
           <span>Untung: <b data-calc="untung" data-list="bahan" data-i="${i}"></b></span>

@@ -1,8 +1,9 @@
 import { esc } from '../utils/format.js';
 
 // font 16px (text-base) supaya iPhone tidak zoom saat fokus
+// data-ph = placeholder asli (dipakai app.js untuk menampilkan harga lama abu-abu)
 export const input = ({ list, i, f, value, ph = '', numeric = false, cls = '' }) => `
-  <input data-list="${list}" data-i="${i}" data-f="${f}" type="text"
+  <input data-list="${list}" data-i="${i}" data-f="${f}" data-ph="${ph}" type="text"
     ${numeric ? 'inputmode="decimal"' : ''} value="${esc(value)}" placeholder="${ph}"
     class="min-w-0 rounded-lg border border-gray-300 bg-white px-2 py-2 text-base outline-none focus:border-green-500 ${cls}">`;
 
@@ -18,6 +19,11 @@ export const head = (title, totalKey, badge) => `
     <h2 class="font-bold text-gray-800">${title}</h2>
     <span data-total="${totalKey}" class="rounded-lg px-2 py-1 text-sm font-bold ${badge}"></span>
   </div>`;
+
+// tombol abu-abu "pakai harga terakhir" (diisi & ditampilkan oleh app.js refresh)
+export const saranBtn = (i, f) => `
+  <button type="button" data-action="pakai" data-saran="${f}" data-i="${i}"
+    class="hidden mt-1 w-full rounded-lg border border-dashed border-gray-300 bg-white py-1 text-xs text-gray-500"></button>`;
 
 // baris sederhana: nama + jumlah (ops / piutang / hutang)
 export const simpleRow = (list, i, item, ph) => `

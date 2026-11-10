@@ -1,4 +1,4 @@
-import { addBtn, delBtn, head, input } from '../components.js';
+import { addBtn, delBtn, head, input, saranBtn } from '../components.js';
 
 // Kartu dan badge diwarnai oleh app.js (refresh):
 // harga beli kosong = oranye "Belum dibeli", terisi = hijau "Sudah dibeli".
@@ -13,7 +13,8 @@ export const bahanView = (s) => `
     <button data-action="import" class="mt-2 w-full rounded-xl bg-blue-600 py-3 font-bold text-white active:opacity-80">➕ Tambahkan ke daftar</button>
   </details>
   <p id="paste-msg" class="mb-2 text-xs text-gray-700"></p>
-  <p class="mb-3 text-xs italic text-gray-500">Harga beli diisi belakangan, <b>per satuan</b> (mis. per kg). Hanya kamu yang melihat harga ini.</p>
+  <p class="mb-3 text-xs italic text-gray-500">Harga beli diisi belakangan, <b>per satuan</b> (mis. per kg). Hanya kamu yang melihat harga ini.
+    Angka abu-abu = harga terakhir untuk bahan itu, ketuk <b>✓ pakai</b> atau ketik harga baru.</p>
   <div class="space-y-2">
     ${s.bahan.map((b, i) => `
       <div data-card="beli" data-i="${i}" class="rounded-xl border p-2">
@@ -26,6 +27,7 @@ export const bahanView = (s) => `
           ${input({ list: 'bahan', i, f: 'sat', value: b.sat, ph: 'Sat' })}
           ${input({ list: 'bahan', i, f: 'harga', value: b.harga, ph: 'Harga beli', numeric: true })}
         </div>
+        ${saranBtn(i, 'harga')}
         <div class="mt-1 flex items-center justify-between">
           <span data-badge data-i="${i}"></span>
           <p class="text-sm text-gray-600">Modal: <b data-calc="jumlah" data-list="bahan" data-i="${i}"></b></p>

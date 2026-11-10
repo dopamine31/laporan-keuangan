@@ -22,17 +22,23 @@ const migrateBahan = (b) => {
   return x;
 };
 
+// dipakai juga oleh rekap untuk membaca data dari server
+export const normalizeState = (next) => {
+  const src = next && typeof next === 'object' ? next : {};
+  const st = { ...emptyState(), ...src };
+  for (const k of ['bahan', 'ops', 'piutang', 'hutang']) {
+    if (!Array.isArray(st[k])) st[k] = [];
+  }
+  st.bahan = st.bahan.map(migrateBahan);
+  if (typeof st.menu !== 'string') st.menu = '';
+  return st;
+};
+
 let state = emptyState();
 
 export const getState = () => state;
 
 export const setState = (next) => {
-  const src = next && typeof next === 'object' ? next : {};
-  state = { ...emptyState(), ...src };
-  for (const k of ['bahan', 'ops', 'piutang', 'hutang']) {
-    if (!Array.isArray(state[k])) state[k] = [];
-  }
-  state.bahan = state.bahan.map(migrateBahan);
-  if (typeof state.menu !== 'string') state.menu = '';
+  state = normalizeState(next);
   return state;
 };
