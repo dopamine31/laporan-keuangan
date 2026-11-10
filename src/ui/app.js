@@ -2,6 +2,7 @@ import { getState, setState, blank } from '../state/store.js';
 import { loadReport, saveReport, saveLocal } from '../services/reportService.js';
 import { loadRange } from '../services/rekapService.js';
 import { getHarga, remember, pushHarga, syncHarga } from '../services/hargaService.js';
+import { getModal, setModal, saranModal, parseRp } from '../services/modalService.js';
 import { signOut } from '../services/authService.js';
 import { totals, rowJumlah, rowJual, num } from '../utils/calc.js';
 import { rupiah, todayISO } from '../utils/format.js';
@@ -171,7 +172,12 @@ export function mountApp(onLogout) {
     const body = () => (my === rekapSeq && tab === 'rekap' ? $('rekap-body') : null);
     try {
       const rows = await loadRange(from, to);
-      if (body()) body().innerHTML = rekapBody(rows);
+      const ctx = { mode: rekap.mode, from, to, modalAwal: null, saran: null };
+      if (rekap.mode === 'minggu') {
+        ctx.modalAwal = await getModal(from);
+        if (ctx.modalAwal === null) ctx.saran = await saranModal(from);
+      }
+      if (body()) body().innerHTML = rekapBody(rows, ctx);
     } catch {
       if (body()) body().innerHTML = '<p class="py-10 text-center text-red-600">Gagal memuat rekap. Cek internet.</p>';
     }
@@ -274,6 +280,17 @@ export function mountApp(onLogout) {
     if (action === 'rekap-prev' || action === 'rekap-next') {
       rekap.anchor = shift(rekap.mode, rekap.anchor, action === 'rekap-next' ? 1 : -1);
       renderTab();
+      return;
+    }
+    if (action === 'simpan-modal' || action === 'pakai-modal') {
+      const raw = action === 'simpan-modal' ? $('modal-awal').value : btn.dataset.v;
+      if (String(raw).trim() === '') {
+        await alertBox('Isi angka modal awal dulu.', { title: 'Modal awal kosong', icon: '⚠️' });
+        return;
+      }
+      const { from } = range('minggu', rekap.anchor);
+      try { await setModal(from, parseRp(raw)); } catch { /* tersimpan di HP, terkirim nanti */ }
+      loadRekap();
       return;
     }
     if (action === 'open-day') {
