@@ -10,7 +10,8 @@ export const blank = {
   hutang:  () => ({ nama: '', jumlah: '' }),
 };
 
-const emptyState = () => ({ menu: '', bahan: [], ops: [], piutang: [], hutang: [] });
+// cair = tanggal uang cair (YYYY-MM-DD), kosong = belum cair
+const emptyState = () => ({ menu: '', cair: '', bahan: [], ops: [], piutang: [], hutang: [] });
 
 // data lama punya "omset" (total per baris) -> jadikan harga jual per satuan
 const migrateBahan = (b) => {
@@ -31,6 +32,7 @@ export const normalizeState = (next) => {
   }
   st.bahan = st.bahan.map(migrateBahan);
   if (typeof st.menu !== 'string') st.menu = '';
+  if (typeof st.cair !== 'string') st.cair = '';
   return st;
 };
 

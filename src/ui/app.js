@@ -33,6 +33,10 @@ const CARD = {
 const BADGE_ON = 'rounded-full bg-green-200 px-2 py-1 text-xs font-bold text-green-800';
 const BADGE_OFF = 'rounded-full bg-amber-200 px-2 py-1 text-xs font-bold text-amber-800';
 
+const CAIR_ON = 'w-full px-4 py-2 text-left text-sm font-bold bg-green-100 text-green-800 active:opacity-80';
+const CAIR_OFF = 'w-full px-4 py-2 text-left text-sm font-bold bg-amber-100 text-amber-800 active:opacity-80';
+const pendek = (iso) => { const [, m, d] = iso.split('-'); return `${Number(d)}/${Number(m)}`; };
+
 const $ = (id) => document.getElementById(id);
 
 export function mountApp(onLogout) {
@@ -63,6 +67,7 @@ export function mountApp(onLogout) {
         <div class="flex items-center justify-between bg-yellow-300 px-4 py-2 font-bold">
           <span>💰 NET PROFIT</span><span id="profit" data-total="profit" class="text-xl"></span>
         </div>
+        <button id="cair" type="button"></button>
       </div>
       <main id="content" class="flex-1 overflow-y-auto overflow-x-hidden p-3"></main>
       <nav class="grid grid-cols-6 border-t bg-white pb-[env(safe-area-inset-bottom)]">
@@ -148,6 +153,16 @@ export function mountApp(onLogout) {
     });
 
     $('profit').classList.toggle('text-red-700', t.profit < 0);
+
+    // tombol cair
+    const cairBtn = $('cair');
+    if (s.cair) {
+      cairBtn.className = CAIR_ON;
+      cairBtn.textContent = `✅ Sudah cair · ${pendek(s.cair)} (ketuk untuk batalkan)`;
+    } else {
+      cairBtn.className = CAIR_OFF;
+      cairBtn.textContent = '⏳ Belum cair · ketuk jika uang sudah masuk';
+    }
   }
 
   async function loadRekap() {
@@ -195,6 +210,23 @@ export function mountApp(onLogout) {
     renderTab();
     setStatus('☁️ Siap');
   }
+
+  // ---- tombol tanda cair
+  $('cair').onclick = async () => {
+    const s = getState();
+    if (s.cair) {
+      const ya = await confirmBox(
+        `Laporan ini ditandai sudah cair tanggal ${pendek(s.cair)}. Batalkan tandanya?`,
+        { title: 'Batalkan tanda cair', icon: '↩️', ok: 'Batalkan', cancel: 'Tetap cair' },
+      );
+      if (!ya) return;
+      getState().cair = '';
+    } else {
+      s.cair = todayISO();
+    }
+    refresh();
+    scheduleSave();
+  };
 
   // ---- event: ketik (tanpa render ulang, supaya keyboard tidak tertutup)
   content.addEventListener('input', (e) => {
@@ -245,6 +277,8 @@ export function mountApp(onLogout) {
       return;
     }
     if (action === 'open-day') {
+      clearTimeout(timer);
+      await persist(); // simpan dulu hari yang sedang dibuka (termasuk menu)
       tanggal = btn.dataset.tanggal;
       $('tanggal').value = tanggal;
       tab = 'bahan';

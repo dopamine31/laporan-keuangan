@@ -23,7 +23,7 @@ export function rekapBody(rows) {
   const days = rows
     .map((r) => {
       const n = normalizeState(r.data);
-      return { tanggal: r.tanggal, menu: n.menu, t: totals(n), kosong: !n.bahan.length && !n.ops.length };
+      return { tanggal: r.tanggal, menu: n.menu, cair: n.cair, t: totals(n), kosong: !n.bahan.length && !n.ops.length };
     })
     .filter((d) => !d.kosong);
 
@@ -34,14 +34,22 @@ export function rekapBody(rows) {
   const profit = omset - bahan - ops;
   const belum = days.filter((d) => d.t.belumBeli > 0).length;
 
+  // status cair dihitung dari omset invoice (hanya hari yang ada omsetnya)
+  const jual = days.filter((d) => d.t.omset > 0);
+  const sudahCair = jual.filter((d) => d.cair);
+  const belumCair = jual.filter((d) => !d.cair);
+  const omsetCair = sudahCair.reduce((a, d) => a + d.t.omset, 0);
+  const omsetBelum = belumCair.reduce((a, d) => a + d.t.omset, 0);
+
   const list = [...days].reverse().map((d) => {
     const dt = parseISO(d.tanggal);
     const hari = `${HARI[dt.getDay()]}, ${dt.getDate()}/${dt.getMonth() + 1}`;
+    const st = d.t.omset <= 0 ? '' : d.cair ? '✅ ' : '⏳ ';
     return `
       <button data-action="open-day" data-tanggal="${d.tanggal}"
         class="flex w-full items-center justify-between gap-2 rounded-xl border border-gray-200 bg-white p-2 text-left active:bg-gray-50">
         <span class="min-w-0">
-          <b class="block text-sm">${hari}${d.t.belumBeli > 0 ? ' ⚠️' : ''}</b>
+          <b class="block text-sm">${st}${hari}${d.t.belumBeli > 0 ? ' ⚠️' : ''}</b>
           <span class="block truncate text-xs text-gray-500">${esc(d.menu) || '-'}</span>
         </span>
         <span class="shrink-0 text-right">
@@ -63,6 +71,18 @@ export function rekapBody(rows) {
       <div class="rounded-xl bg-red-50 p-2"><div class="text-[11px] text-gray-500">Operasional</div><b class="text-sm text-red-700">${rupiah(ops)}</b></div>
     </div>
     <p class="mt-2 text-center text-[11px] text-gray-500">Profit = Omset − Modal bahan − Operasional</p>
+    <div class="mt-2 grid grid-cols-2 gap-2 text-center">
+      <div class="rounded-xl bg-green-100 p-2">
+        <div class="text-[11px] text-gray-600">✅ Sudah cair</div>
+        <b class="text-sm text-green-800">${rupiah(omsetCair)}</b>
+        <div class="text-[11px] text-gray-500">${sudahCair.length} hari</div>
+      </div>
+      <div class="rounded-xl ${belumCair.length ? 'bg-amber-100' : 'bg-gray-100'} p-2">
+        <div class="text-[11px] text-gray-600">⏳ Belum cair</div>
+        <b class="text-sm ${belumCair.length ? 'text-amber-800' : ''}">${rupiah(omsetBelum)}</b>
+        <div class="text-[11px] text-gray-500">${belumCair.length} hari</div>
+      </div>
+    </div>
     ${belum ? `<p class="mt-2 rounded-lg bg-amber-100 p-2 text-xs text-amber-800">⚠️ Modal belum lengkap di ${belum} hari (ada bahan yang harga belinya kosong). Profit bisa tampak lebih besar dari kenyataan.</p>` : ''}
     <h3 class="mb-2 mt-4 text-sm font-bold text-gray-700">Per hari (ketuk untuk membuka)</h3>
     <div class="space-y-2">${list}</div>`;
