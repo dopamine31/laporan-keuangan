@@ -8,6 +8,7 @@ import { rupiah, todayISO } from '../utils/format.js';
 import { range, shift } from '../utils/periode.js';
 import { parseList } from '../utils/parseList.js';
 import { exportImage } from './exportImage.js';
+import { alertBox, confirmBox } from './dialog.js';
 import { bahanView } from './views/bahan.js';
 import { jualView } from './views/jual.js';
 import { opsView } from './views/ops.js';
@@ -214,12 +215,19 @@ export function mountApp(onLogout) {
     if (action === 'export' || action === 'export-internal') {
       const mode = action === 'export' ? 'invoice' : 'internal';
       const t = totals(s);
-      if (mode === 'invoice' && t.belumJual > 0
-        && !confirm(`${t.belumJual} bahan belum ada harga jual dan akan tampil kosong di invoice. Tetap buat gambar?`)) return;
+      if (mode === 'invoice' && t.belumJual > 0) {
+        const lanjut = await confirmBox(
+          `${t.belumJual} bahan belum ada harga jual dan akan tampil kosong di invoice.`,
+          { title: 'Harga jual belum lengkap', icon: '⚠️', ok: 'Tetap buat', cancel: 'Batal' },
+        );
+        if (!lanjut) return;
+      }
       const label = btn.textContent;
       btn.disabled = true; btn.textContent = '⏳ Membuat gambar…';
       try { await exportImage(s, tanggal, mode); }
-      catch (err) { alert('Gagal membuat gambar: ' + err.message); }
+      catch (err) {
+        await alertBox(`Gagal membuat gambar: ${err.message}`, { title: 'Gagal', icon: '❌' });
+      }
       btn.disabled = false; btn.textContent = label;
       return;
     }
