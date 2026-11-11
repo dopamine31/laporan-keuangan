@@ -1,37 +1,13 @@
 import html2canvas from 'html2canvas-pro';
 import { totals, num, rowJumlah, rowJual } from '../utils/calc.js';
 import { rupiah, tanggalPanjang, esc } from '../utils/format.js';
+import { invoiceHTML } from './invoice.js';
 
 const head2 = (s, tanggal) => `
   <table>
     <tr><th class="h-blue" style="width:130px">Tanggal</th><td class="c"><b>${tanggalPanjang(tanggal)}</b></td></tr>
     <tr><th class="h-cream">Menu</th><td class="c">${esc(s.menu) || '-'}</td></tr>
   </table>`;
-
-// ===== INVOICE PELANGGAN: hanya harga jual + total =====
-const invoiceTemplate = (s, t, tanggal) => {
-  const rows = s.bahan.length
-    ? s.bahan.map((b, i) => {
-        const ada = num(b.jual) > 0;
-        return `<tr>
-          <td class="c">${i + 1}</td>
-          <td style="white-space:normal">${esc(b.nama)}</td>
-          <td class="c">${esc(b.qty)}</td><td class="c">${esc(b.sat)}</td>
-          <td class="r">${ada ? rupiah(num(b.jual)) : ''}</td>
-          <td class="r ${ada ? 'filled' : ''}">${ada ? rupiah(rowJual(b)) : ''}</td></tr>`;
-      }).join('')
-    : '<tr><td colspan="6" class="c">-</td></tr>';
-  return `
-  <div class="rpt" style="width:800px">
-    ${head2(s, tanggal)}
-    <table>
-      <colgroup><col style="width:50px"><col><col style="width:90px"><col style="width:90px"><col style="width:130px"><col style="width:150px"></colgroup>
-      <thead><tr>${['NO', 'BAHAN', 'QTY', 'SAT', 'HARGA', 'JUMLAH'].map((h) => `<th class="h-blue">${h}</th>`).join('')}</tr></thead>
-      <tbody>${rows}</tbody>
-      <tfoot><tr class="tot"><td colspan="5" class="c">TOTAL</td><td class="r">${rupiah(t.omset)}</td></tr></tfoot>
-    </table>
-  </div>`;
-};
 
 // ===== LAPORAN INTERNAL: lengkap (modal, profit, dll) =====
 const MIN_ROWS = 15;
@@ -128,7 +104,9 @@ export async function exportImage(state, tanggal, mode = 'invoice') {
   const isInvoice = mode === 'invoice';
   const host = document.createElement('div');
   host.style.cssText = 'position:fixed;left:-10000px;top:0;background:#fff';
-  host.innerHTML = (isInvoice ? invoiceTemplate : internalTemplate)(state, totals(state), tanggal);
+  host.innerHTML = isInvoice
+    ? invoiceHTML(state, tanggal)
+    : internalTemplate(state, totals(state), tanggal);
   document.body.appendChild(host);
   try {
     if (document.fonts?.ready) await document.fonts.ready;

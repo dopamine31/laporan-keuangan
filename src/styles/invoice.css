@@ -1,0 +1,37 @@
+.inv {
+  width: 800px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: #fff;
+  color: #000;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 20px;
+  line-height: 1.15;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+.inv td,
+.inv th {
+  border: 1px solid #000;
+  height: 34px;
+  padding: 3px 8px;
+  white-space: normal;
+  word-break: break-word;
+  vertical-align: middle;
+}
+.inv .lbl { font-weight: 700; text-align: center; background: #d0e0e3; }
+.inv .val { font-weight: 700; text-align: center; background: #d0e0e3; }
+.inv .menu td { background: #fff2cc; }
+.inv .menu .lbl { font-weight: 400; font-style: italic; background: #fff2cc; }
+.inv .menu .val { font-weight: 400; background: #fff2cc; }
+.inv .head th { background: #d0e0e3; font-weight: 700; text-align: center; }
+.inv .c { text-align: center; }
+.inv .r { text-align: right; }
+.inv .tot td {
+  background: #d9ead3;
+  font-weight: 700;
+  font-size: 24px;
+  height: 40px;
+  text-shadow: 0.5px 0 0 #000, -0.5px 0 0 #000;
+}
+.inv .tot .mid { text-align: center; }
