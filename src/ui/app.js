@@ -16,6 +16,7 @@ import { opsView } from './views/ops.js';
 import { noteView } from './views/note.js';
 import { exportView } from './views/exportTab.js';
 import { rekapView, rekapBody } from './views/rekap.js';
+import { mountKatalog } from './views/katalog.js';
 
 const TABS = [
   { id: 'bahan', icon: '🛒', label: 'Bahan' },
@@ -33,7 +34,6 @@ const CARD = {
 };
 const BADGE_ON = 'rounded-full bg-green-200 px-2 py-1 text-xs font-bold text-green-800';
 const BADGE_OFF = 'rounded-full bg-amber-200 px-2 py-1 text-xs font-bold text-amber-800';
-
 const CAIR_ON = 'w-full px-4 py-2 text-left text-sm font-bold bg-green-100 text-green-800 active:opacity-80';
 const CAIR_OFF = 'w-full px-4 py-2 text-left text-sm font-bold bg-amber-100 text-amber-800 active:opacity-80';
 const pendek = (iso) => { const [, m, d] = iso.split('-'); return `${Number(d)}/${Number(m)}`; };
@@ -44,14 +44,24 @@ export function mountApp(onLogout) {
   let tab = 'bahan';
   let tanggal = todayISO();
   let timer;
-  const rekap = { mode: 'minggu', anchor: todayISO() };
+  const rekap = { mode: 'minggu', anchor: todayISO(), sub: 'rekap' };
   let rekapSeq = 0;
   let undoFn = null;
   let undoTimer;
 
+  // pilihan di dalam tab Rekap: Rekap | Katalog
+  const subSwitch = () => {
+    const b = (id, text) => `
+      <button data-action="rekap-sub" data-sub="${id}"
+        class="rounded-lg py-2 text-sm ${rekap.sub === id ? 'bg-green-600 font-bold text-white shadow' : 'text-gray-500'}">${text}</button>`;
+    return `<div class="mb-3 grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1">${b('rekap', '📊 Rekap')}${b('katalog', '📚 Katalog')}</div>`;
+  };
+
   const VIEWS = {
     bahan: bahanView, jual: jualView, ops: opsView, note: noteView, export: exportView,
-    rekap: () => rekapView(rekap.mode, rekap.anchor),
+    rekap: () => subSwitch() + (rekap.sub === 'katalog'
+      ? '<div id="katalog-body"></div>'
+      : rekapView(rekap.mode, rekap.anchor)),
   };
 
   $('app').innerHTML = `
@@ -110,7 +120,6 @@ export function mountApp(onLogout) {
     const s = getState();
     const t = totals(s);
     document.querySelectorAll('[data-total]').forEach((el) => { el.textContent = rupiah(t[el.dataset.total]); });
-
     document.querySelectorAll('[data-calc]').forEach((el) => {
       const it = s[el.dataset.list][el.dataset.i];
       if (!it) return;
@@ -121,7 +130,6 @@ export function mountApp(onLogout) {
         el.textContent = num(it.harga) > 0 ? rupiah(rowJual(it) - rowJumlah(it)) : '-';
       }
     });
-
     document.querySelectorAll('[data-card]').forEach((el) => {
       const b = s.bahan[el.dataset.i];
       if (!b) return;
@@ -129,7 +137,6 @@ export function mountApp(onLogout) {
       const done = num(kind === 'beli' ? b.harga : b.jual) > 0;
       el.className = `rounded-xl border p-2 ${done ? CARD[kind].on : CARD[kind].off}`;
     });
-
     document.querySelectorAll('[data-badge]').forEach((el) => {
       const b = s.bahan[el.dataset.i];
       if (!b) return;
@@ -137,7 +144,6 @@ export function mountApp(onLogout) {
       el.className = done ? BADGE_ON : BADGE_OFF;
       el.textContent = done ? '✅ Sudah dibeli' : '🛍️ Belum dibeli';
     });
-
     // harga terakhir per nama bahan: abu-abu, baru dipakai kalau kamu ketuk "pakai"
     document.querySelectorAll('[data-saran]').forEach((el) => {
       const b = s.bahan[el.dataset.i];
@@ -152,9 +158,7 @@ export function mountApp(onLogout) {
       const inp = document.querySelector(`input[data-list="bahan"][data-i="${el.dataset.i}"][data-f="${f}"]`);
       if (inp) inp.placeholder = show ? String(v) : (inp.dataset.ph || '');
     });
-
     $('profit').classList.toggle('text-red-700', t.profit < 0);
-
     // tombol cair
     const cairBtn = $('cair');
     if (s.cair) {
@@ -191,7 +195,10 @@ export function mountApp(onLogout) {
     });
     $('profitbar').classList.toggle('hidden', tab === 'rekap');
     refresh();
-    if (tab === 'rekap') loadRekap();
+    if (tab === 'rekap') {
+      if (rekap.sub === 'katalog') mountKatalog($('katalog-body'));
+      else loadRekap();
+    }
   }
 
   async function persist() {
@@ -269,13 +276,13 @@ export function mountApp(onLogout) {
       btn.disabled = false; btn.textContent = label;
       return;
     }
-
     if (action === 'logout') {
       clearTimeout(timer);
       await persist(); await signOut(); onLogout(); return;
     }
 
     // ---- rekap
+    if (action === 'rekap-sub') { rekap.sub = btn.dataset.sub; renderTab(); return; }
     if (action === 'rekap-mode') { rekap.mode = btn.dataset.mode; renderTab(); return; }
     if (action === 'rekap-prev' || action === 'rekap-next') {
       rekap.anchor = shift(rekap.mode, rekap.anchor, action === 'rekap-next' ? 1 : -1);
@@ -327,7 +334,6 @@ export function mountApp(onLogout) {
       scheduleSave();
       return;
     }
-
     if (action === 'clear') {
       const removed = s[list].splice(0);
       renderTab();
@@ -339,7 +345,6 @@ export function mountApp(onLogout) {
       });
       return;
     }
-
     if (action === 'add') {
       s[list].push(blank[list]());
       renderTab();
@@ -370,7 +375,6 @@ export function mountApp(onLogout) {
       content.scrollTop = 0;
     };
   });
-
   $('menu').oninput = (e) => { getState().menu = e.target.value; scheduleSave(); };
   $('tanggal').onchange = async (e) => {
     clearTimeout(timer); // cegah data tanggal lama tersimpan ke tanggal baru
