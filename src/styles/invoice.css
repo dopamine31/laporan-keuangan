@@ -1,7 +1,7 @@
 .inv {
-  width: 800px;
+  width: auto;
   border-collapse: collapse;
-  table-layout: fixed;
+  table-layout: auto;
   background: #fff;
   color: #000;
   font-family: Arial, Helvetica, sans-serif;
@@ -14,9 +14,8 @@
 .inv th {
   border: 1px solid #000;
   height: 34px;
-  padding: 3px 8px;
-  white-space: normal;
-  word-break: break-word;
+  padding: 3px 10px;
+  white-space: nowrap;
   vertical-align: middle;
 }
 .inv .lbl { font-weight: 700; text-align: center; background: #d0e0e3; }
@@ -25,13 +24,21 @@
 .inv .menu .lbl { font-weight: 400; font-style: italic; background: #fff2cc; }
 .inv .menu .val { font-weight: 400; background: #fff2cc; }
 .inv .head th { background: #d0e0e3; font-weight: 700; text-align: center; }
+.inv .c1 { min-width: 240px; }
+.inv .cq { width: 80px; min-width: 80px; }
+.inv .cs { width: 80px; min-width: 80px; }
+.inv .ch { width: 140px; min-width: 140px; }
+.inv .cj { width: 200px; min-width: 200px; }
 .inv .c { text-align: center; }
 .inv .r { text-align: right; }
 .inv .tot td {
   background: #d9ead3;
   font-weight: 700;
   font-size: 24px;
-  height: 40px;
+  height: 42px;
   text-shadow: 0.5px 0 0 #000, -0.5px 0 0 #000;
 }
 .inv .tot .mid { text-align: center; }
+/* baris total: tanpa garis pemisah kolom */
+.inv .tot td:not(:last-child) { border-right: 0; }
+.inv .tot td + td { border-left: 0; }

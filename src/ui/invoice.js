@@ -5,10 +5,14 @@ const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 const BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli',
   'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-// Jumlah baris minimal (sama seperti gambar contoh)
+// Jumlah baris minimal
 const MIN_BARIS = 18;
-// true = baris kosong tetap menampilkan "Rp0" seperti gambar. false = dikosongkan.
+// true = baris kosong menampilkan "Rp0". false = dikosongkan.
 const RP0_KOSONG = true;
+// Judul kolom pertama. Contoh gambar memakai "Bahan Kering".
+const JUDUL_BAHAN = 'BAHAN';
+// Tulisan di baris total
+const JUDUL_TOTAL = 'GRAND TOTAL';
 
 const esc = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (c) =>
@@ -54,14 +58,13 @@ export function invoiceHTML(state, tanggalISO) {
   const menu = String(state.menu || '').trim() || '-';
 
   return `<table class="inv">
-    <colgroup>
-      <col style="width:229px"><col style="width:162px"><col style="width:79px">
-      <col style="width:165px"><col style="width:165px">
-    </colgroup>
     <tr><td class="lbl">Tanggal</td><td class="val" colspan="4">${esc(tglPanjang(tanggalISO))}</td></tr>
     <tr class="menu"><td class="lbl">Menu</td><td class="val" colspan="4">${esc(menu)}</td></tr>
-    <tr class="head"><th>BAHAN</th><th>QTY</th><th>SAT</th><th>Harga</th><th>Jumlah</th></tr>
+    <tr class="head">
+      <th class="c1">${esc(JUDUL_BAHAN)}</th><th class="cq">QTY</th><th class="cs">SAT</th>
+      <th class="ch">Harga</th><th class="cj">Jumlah</th>
+    </tr>
     ${body}
-    <tr class="tot"><td></td><td class="mid" colspan="2">TOTAL</td><td></td><td class="r">${rp(total)}</td></tr>
+    <tr class="tot"><td class="mid" colspan="2">${esc(JUDUL_TOTAL)}</td><td class="mid">=</td><td class="r" colspan="2">${rp(total)}</td></tr>
   </table>`;
 }
