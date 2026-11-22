@@ -5,8 +5,8 @@ export const parseISO = (s) => { const [y, m, d] = s.split('-').map(Number); ret
 export const HARI = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 const BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
-// Minggu buku mulai hari apa: 0 = Minggu (tanggal laporan = tanggal belanja), 1 = Senin
-export const MINGGU_MULAI = 0;
+// Minggu buku mulai hari apa: 0 = Minggu, 1 = Senin (tanggal laporan = tanggal pakai/cair, jadi Senin-Minggu)
+export const MINGGU_MULAI = 1;
 
 // minggu = MINGGU_MULAI + 6 hari, bulan = tanggal 1 sampai akhir bulan
 export function range(mode, anchorISO) {

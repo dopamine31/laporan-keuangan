@@ -2,7 +2,8 @@ import { loadRange } from '../../services/rekapService.js';
 import { rupiah, esc } from '../../utils/format.js';
 
 const num = (n) => Number(n) || 0;
-const norm = (s) => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+const norm = (s) => String(s || '').toLowerCase().replace(/[()[\]{}"]/g, ' ').replace(/\s+/g, ' ').trim();
+const rapi = (s) => String(s || '').replace(/\s+/g, ' ').replace(/\(\s+/g, '(').replace(/\s+\)/g, ')').trim();
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const ribu = (n) => String(Math.round(num(n))).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 
@@ -37,6 +38,7 @@ function build(rows) {
       const k = norm(b.nama);
       let v = g.map.get(k);
       if (!v) { v = { k, nama: String(b.nama).trim(), sat: '', beli: new Map(), jual: new Map() }; g.map.set(k, v); }
+      v.nama = rapi(b.nama);
       if (b.sat) v.sat = b.sat;
       if (num(b.harga) > 0) v.beli.set(t, num(b.harga));
       if (num(b.jual) > 0) v.jual.set(t, num(b.jual));

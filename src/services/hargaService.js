@@ -1,15 +1,29 @@
 import { supabase } from '../config/supabase.js';
 import { num } from '../utils/calc.js';
-
 const LS = 'harga_bahan';
 // cache: { "nama bahan": { harga, jual, t, d } }  d = belum terkirim ke server
-const read = () => { try { return JSON.parse(localStorage.getItem(LS)) || {}; } catch { return {}; } };
+// kunci: huruf kecil, tanda kurung diabaikan, spasi dirapikan
+export const kunci = (n) => String(n ?? '')
+  .toLowerCase()
+  .replace(/[()[\]{}"]/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
+const waktu = (t) => (t ? new Date(t).getTime() || 0 : 0);
+// baca cache lama, gabungkan kunci yang sekarang dianggap sama (yang terbaru menang)
+const read = () => {
+  let raw = {};
+  try { raw = JSON.parse(localStorage.getItem(LS)) || {}; } catch { raw = {}; }
+  const out = {};
+  for (const [nama, v] of Object.entries(raw)) {
+    const k = kunci(nama);
+    if (!k) continue;
+    if (!out[k] || waktu(v.t) >= waktu(out[k].t)) out[k] = v;
+  }
+  return out;
+};
 let cache = read();
 const write = () => localStorage.setItem(LS, JSON.stringify(cache));
-
-export const kunci = (n) => String(n ?? '').trim().toLowerCase().replace(/\s+/g, ' ');
 export const getHarga = (nama) => cache[kunci(nama)] || null;
-
 // catat harga terakhir dari daftar bahan (hanya yang terisi)
 export function remember(items) {
   let changed = false;
@@ -27,7 +41,6 @@ export function remember(items) {
   if (changed) write();
   return changed;
 }
-
 export async function pushHarga() {
   const dirty = Object.entries(cache).filter(([, v]) => v.d);
   if (!dirty.length) return;
@@ -41,15 +54,17 @@ export async function pushHarga() {
   for (const [nama, v] of dirty) if (cache[nama] && cache[nama].t === v.t) delete cache[nama].d;
   write();
 }
-
 // kirim yang belum terkirim, lalu ambil harga dari server
 export async function syncHarga() {
   try { await pushHarga(); } catch { /* offline */ }
   const { data, error } = await supabase.from('harga_bahan').select('nama,harga,jual,updated_at');
   if (error) throw error;
-  for (const r of data) {
-    if (cache[r.nama]?.d) continue;
-    cache[r.nama] = { harga: Number(r.harga) || 0, jual: Number(r.jual) || 0, t: r.updated_at };
+  // urut dari yang terlama, supaya baris terbaru menimpa baris lama yang namanya sama
+  const urut = [...data].sort((a, b) => waktu(a.updated_at) - waktu(b.updated_at));
+  for (const r of urut) {
+    const k = kunci(r.nama);
+    if (!k || cache[k]?.d) continue;
+    cache[k] = { harga: Number(r.harga) || 0, jual: Number(r.jual) || 0, t: r.updated_at };
   }
   write();
 }
